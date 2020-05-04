@@ -1,0 +1,60 @@
+# https://www.serverless.com/framework/docs/providers/aws/guide/serverless.yml/
+service: my-first-slsapp
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  stage: ${opt:stage, "staging"}
+  region: ${opt:region, "ap-northeast-1"}
+  apiKeys:
+    - my_apikey_${self:provider.stage}
+
+plugins:
+  - serverless-webpack
+  - serverless-dotenv-plugin
+
+custom:
+  webpack:
+    webpackConfig: ./webpack.config.js
+    includeModules: true
+  config:
+    staging:
+      GITHUB_ACCESS_TOKEN: ${env:GITHUB_ACCESS_TOKEN_STAGING}
+    production:
+      GITHUB_ACCESS_TOKEN: ${env:GITHUB_ACCESS_TOKEN_PRODUCTION}
+
+functions:
+  hello:
+    handler: src/handler.hello
+    events:
+      - http:
+          path: hello
+          method: get
+  hello2:
+    handler: src/handler.hello2
+    events:
+      - http:
+          path: hello2
+          method: get
+          cors: true
+          private: true
+  connpassEvent:
+    handler: src/connpass.events
+    events:
+      - http:
+          path: /connpass/events
+          method: get
+  githubIssues:
+    handler: src/github.issues
+    environment:
+      GITHUB_ACCESS_TOKEN: ${self:custom.config.${self:provider.stage}.GITHUB_ACCESS_TOKEN}
+    events:
+      - http:
+          path: /github/issues
+          method: get
+  githubIssueNippo:
+    handler: src/github.nippo
+    environment:
+      GITHUB_ACCESS_TOKEN: ${self:custom.config.${self:provider.stage}.GITHUB_ACCESS_TOKEN}
+    events:
+      - schedule: cron(0 1 * * ? *)
