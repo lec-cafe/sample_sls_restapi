@@ -18,4 +18,4 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         run: |
           npm i
-          npm run deploy -- --stage staging
+          serverless deploy --region ap-northeast-1 --stage staging
